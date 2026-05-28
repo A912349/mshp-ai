@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Счётчик пальцев</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <main class="page">
+    <header class="app-header">
+      <div>
+        <h1>Счётчик пальцев</h1>
+        <p>Включите камеру и покажите руку. Результат появится справа.</p>
+      </div>
+      <div class="status-card" aria-live="polite">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Проверка...</span>
+      </div>
+    </header>
+
+    {% if error %}
+      <section class="notice notice-error">
+        <h2>Не найдена модель</h2>
+        <p>{{ error }}</p>
+        <p>Выполните <code>python scripts/download_model.py</code>, затем снова запустите проект.</p>
+      </section>
+    {% else %}
+      <section class="controls">
+        <div class="button-row">
+          <button id="startButton" type="button">Включить камеру</button>
+          <button id="stopButton" class="secondary" type="button" disabled>Остановить</button>
+          <button id="switchCameraButton" class="secondary" type="button">Сменить камеру</button>
+          <button id="snapshotButton" class="secondary" type="button">Снимок</button>
+          <button id="fullscreenButton" class="secondary" type="button">Развернуть</button>
+        </div>
+
+        <div class="settings-row" aria-label="Настройки">
+          <label>
+            Качество
+            <select id="qualitySelect">
+              <option value="low">Экономное</option>
+              <option value="balanced" selected>Обычное</option>
+              <option value="high">Чёткое</option>
+            </select>
+          </label>
+
+          <label class="check-row">
+            <input id="gridToggle" type="checkbox" />
+            <span>Сетка</span>
+          </label>
+        </div>
+
+        <p id="cameraHint">Лучше открывать через <b>http://127.0.0.1:5000</b>.</p>
+      </section>
+
+      <section class="workspace">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Камера</h2>
+            <span id="resolution">—</span>
+          </div>
+          <div class="video-wrap" id="cameraWrap">
+            <video id="localVideo" autoplay playsinline muted></video>
+            <div id="cameraPlaceholder" class="empty-state">Камера выключена</div>
+          </div>
+        </article>
+
+        <article class="panel result-panel" id="resultPanel">
+          <div class="panel-head">
+            <h2>Результат</h2>
+            <span>разметка руки</span>
+          </div>
+          <div class="video-wrap" id="resultWrap">
+            <img id="processedFrame" alt="Кадр с разметкой руки" />
+            <div id="placeholder" class="empty-state">Здесь будет результат</div>
+          </div>
+        </article>
+      </section>
+
+      <canvas id="captureCanvas"></canvas>
+    {% endif %}
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <span>Рук</span>
+        <strong id="hands">0</strong>
+      </article>
+      <article class="summary-card">
+        <span>Пальцев</span>
+        <strong id="fingers">0</strong>
+      </article>
+      <article class="summary-card wide">
+        <span>Жест</span>
+        <strong id="gesture">—</strong>
+      </article>
+      <article class="summary-card">
+        <span>Время</span>
+        <strong id="sessionTime">00:00</strong>
+      </article>
+    </section>
+
+    <section class="history-card">
+      <div class="card-head">
+        <h2>История</h2>
+        <button id="clearHistoryButton" class="tiny" type="button">Очистить</button>
+      </div>
+      <ul id="gestureHistory" class="history-list">
+        <li class="muted-row">Пока пусто.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='client.js') }}"></script>
+</body>
+</html>
