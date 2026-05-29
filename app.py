@@ -21,6 +21,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 from flask import Flask, jsonify, render_template, request
+from flask import Response
 
 from detector import HandGestureDetector
 
@@ -34,14 +35,6 @@ app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
 detector: HandGestureDetector | None = None
 startup_error: str | None = None
 
-
-def init_resources() -> None:
-    """Инициализация модели. Камера здесь не открывается."""
-    global detector, startup_error
-    try:
-        detector = HandGestureDetector(model_path=MODEL_PATH)
-    except Exception as exc:
-        startup_error = str(exc)
 
 def get_detector():
     global detector, startup_error
@@ -94,11 +87,7 @@ def process_frame():
     if not ok:
         return jsonify({"error": "Не удалось закодировать результат"}), 500
 
-    image_base64 = base64.b64encode(buffer).decode("ascii")
-    return jsonify({
-        "image": f"data:image/jpeg;base64,{image_base64}",
-        "state": detector.state.__dict__,
-    })
+    return Response(buffer.tobytes(), mimetype="image/jpeg")
 
 
 @app.route("/status")

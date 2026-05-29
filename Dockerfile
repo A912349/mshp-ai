@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libgomp1 \
     libgl1-mesa-dri \
     libegl1 \
+    libgles2-mesa-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
