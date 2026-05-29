@@ -348,14 +348,18 @@ async function sendFrame() {
         body: formData,
       });
 
-      const data = await response.json();
-      if (!response.ok || data.error) {
-        setStatus('Ошибка обработки', 'bad');
-        setHint(data.error || 'Кадр не обработан.');
-        return;
-      }
 
-      processedFrame.src = data.image;
+      if (!response.ok) {
+        const errText = await response.text();
+        setStatus('Ошибка обработки', 'bad');
+        setHint(errText || 'Кадр не обработан.');
+        return;
+     }
+
+     const blob = await response.blob();
+     const url = URL.createObjectURL(blob);
+
+      processedFrame.src = url;
       processedFrame.style.display = 'block';
       if (placeholder) placeholder.style.display = 'none';
       updateState(data.state);
