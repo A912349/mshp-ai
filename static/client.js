@@ -318,59 +318,60 @@ async function switchCamera() {
 }
 
 async function sendFrame() {
-  if (!running || processing || !localVideo.videoWidth || !localVideo.videoHeight) return;
+    if (!running || processing || !localVideo.videoWidth || !localVideo.videoHeight) return;
 
-  const settings = currentQuality();
-  const now = performance.now();
-  if (now - lastFrameAt < settings.interval - 10) return;
-  lastFrameAt = now;
-  processing = true;
+    const settings = currentQuality();
+    const now = performance.now();
+    if (now - lastFrameAt < settings.interval - 10) return;
+    lastFrameAt = now;
+    processing = true;
 
-  const scale = Math.min(1, settings.maxWidth / localVideo.videoWidth);
-  captureCanvas.width = Math.round(localVideo.videoWidth * scale);
-  captureCanvas.height = Math.round(localVideo.videoHeight * scale);
+    const scale = Math.min(1, settings.maxWidth / localVideo.videoWidth);
+    captureCanvas.width = Math.round(localVideo.videoWidth * scale);
+    captureCanvas.height = Math.round(localVideo.videoHeight * scale);
 
-  const ctx = captureCanvas.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(localVideo, 0, 0, captureCanvas.width, captureCanvas.height);
+    const ctx = captureCanvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(localVideo, 0, 0, captureCanvas.width, captureCanvas.height);
 
-  captureCanvas.toBlob(async blob => {
-    if (!blob) {
-      processing = false;
-      return;
-    }
+    captureCanvas.toBlob(async (frameBlob) => {
+        if (!frameBlob) {
+            processing = false;
+            return;
+        }
 
-    try {
-      const formData = new FormData();
-      formData.append('frame', blob, 'frame.jpg');
+        try {
+            const formData = new FormData();
+            formData.append('frame', frameBlob, 'frame.jpg');
 
-      const response = await fetch('/process_frame', {
-        method: 'POST',
-        body: formData,
-      });
+            const response = await fetch('/process_frame', {
+                method: 'POST',
+                body: formData,
+            });
 
+            if (!response.ok) {
+                const errText = await response.text();
+                setStatus('Ошибка обработки', 'bad');
+                setHint(errText || 'Кадр не обработан.');
+                return;
+            }
 
-      if (!response.ok) {
-        const errText = await response.text();
-        setStatus('Ошибка обработки', 'bad');
-        setHint(errText || 'Кадр не обработан.');
-        return;
-     }
+            const imageBlob = await response.blob();
+            const url = URL.createObjectURL(imageBlob);
 
-     const blob = await response.blob();
-     const url = URL.createObjectURL(blob);
+            processedFrame.src = url;
+            processedFrame.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
 
-      processedFrame.src = url;
-      processedFrame.style.display = 'block';
-      if (placeholder) placeholder.style.display = 'none';
-      updateState(data.state);
-      setStatus('Распознавание работает');
-    } catch (error) {
-      setStatus('Нет связи с сервером', 'bad');
-      setHint('Сервер недоступен.');
-    } finally {
-      processing = false;
-    }
-  }, 'image/jpeg', settings.jpeg);
+            setStatus('Распознавание работает');
+
+        } catch (error) {
+            console.error(error);
+            setStatus('Нет связи с сервером', 'bad');
+            setHint('Сервер недоступен.');
+        } finally {
+            processing = false;
+        }
+    }, 'image/jpeg', settings.jpeg);
 }
 
 function downloadDataUrl(dataUrl, filename) {
