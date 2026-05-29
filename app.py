@@ -25,7 +25,7 @@ from flask import Flask, jsonify, render_template, request
 from detector import HandGestureDetector
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-MODEL_PATH = PROJECT_ROOT / "models" / "hand_landmarker.task"
+MODEL_PATH = Path("/app/models/hand_landmarker.task")
 
 app = Flask(__name__)
 app.json.ensure_ascii = False  # JSON возвращает русские символы без \uXXXX
