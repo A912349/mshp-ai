@@ -38,9 +38,9 @@ let stableGesture = '';
 let historyWasCleared = false;
 
 const qualityMap = {
-  low: { maxWidth: 480, interval: 220, jpeg: 0.66, label: 'экономное' },
-  balanced: { maxWidth: 720, interval: 140, jpeg: 0.78, label: 'обычное' },
-  high: { maxWidth: 960, interval: 95, jpeg: 0.86, label: 'чёткое' },
+  low: { maxWidth: 480, interval: 20, jpeg: 0.66, label: 'экономное' },
+  balanced: { maxWidth: 720, interval: 20, jpeg: 0.78, label: 'обычное' },
+  high: { maxWidth: 960, interval: 20, jpeg: 0.86, label: 'чёткое' },
 };
 
 function currentQuality() {
