@@ -43,6 +43,21 @@ def init_resources() -> None:
     except Exception as exc:
         startup_error = str(exc)
 
+def get_detector():
+    global detector, startup_error
+
+    if startup_error:
+        return None
+
+    if detector is None:
+        try:
+            detector = HandGestureDetector(model_path=MODEL_PATH)
+        except Exception as exc:
+            startup_error = str(exc)
+            return None
+
+    return detector
+
 
 @app.route("/")
 def index():
@@ -57,6 +72,7 @@ def process_frame():
     Backend декодирует изображение, запускает MediaPipe, рисует скелет руки,
     кодирует результат обратно в JPEG и возвращает JSON.
     """
+    detector = get_detector()
     if startup_error:
         return jsonify({"error": startup_error}), 500
     if detector is None:
@@ -104,8 +120,6 @@ def add_no_cache_headers(response):
 
 
 if __name__ == "__main__":
-    init_resources()
-
     host = os.environ.get("FLASK_HOST", "0.0.0.0")
     port = int(os.environ.get("FLASK_PORT", "5000"))
 
