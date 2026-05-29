@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
     libgomp1 \
-    libgles2-mesa \
+    libgl1-mesa-dri \
     libegl1 \
     && rm -rf /var/lib/apt/lists/*
 
